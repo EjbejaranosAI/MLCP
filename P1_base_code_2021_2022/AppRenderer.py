@@ -51,7 +51,7 @@ def sphere_test_scene(areaLS=False, use_env_map=False):
         # env_map_path = 'env_maps/black_and_white.hdr'
         # env_map_path = 'env_maps/outdoor_umbrellas_4k.hdr'
         # env_map_path = 'env_maps/outdoor_umbrellas_4k_clamped.hdr'
-        env_map_path = 'env_maps/arch_nozero.hdr'
+        env_map_path = 'env_maps/arch_nonzero.hdr'
         scene_.set_environment_map(env_map_path)
 
     # Create the camera
@@ -166,15 +166,17 @@ DIRECTORY = '.\\out\\'
 
 # -------------------------------------------------Main
 # Create Integrator
-# Assignment 1
+# A1 - Task 1
 #integrator = LazyIntegrator(DIRECTORY + FILENAME)
-# Assignment 2
+# A1 - Task 2
 #integrator = IntersectionIntegrator(DIRECTORY + FILENAME)
-# Assignment 3
+# A1 - Task 3
 #integrator = DepthIntegrator(DIRECTORY + FILENAME)
 #integrator = NormalIntegrator(DIRECTORY + FILENAME)
-# Assignment 4
+# A1 - Task 4
 integrator = PhongIntegrator(DIRECTORY + FILENAME)
+# A2 - Task 1
+#integrator = CMCIntegrator(DIRECTORY + FILENAME)
 # Create the scene
 scene = sphere_test_scene(areaLS=False, use_env_map=False)
 #scene = cornell_box_scene(0.75, 2, areaLS=False)
