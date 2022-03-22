@@ -178,8 +178,8 @@ def sample_set_hemisphere(n_samples, pdf):
         omega_i = pdf.generate_dir(u1, u2)
         sample_set.append(omega_i)
         sample_prob.append(pdf.get_val(omega_i))
-        # plt.plot(omega_i.x, omega_i.z, 'o')
-    # plt.show()
+         #plt.plot(omega_i.x, omega_i.z, 'o')
+     #plt.show()
     return sample_set, sample_prob
 
 
