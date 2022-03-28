@@ -100,10 +100,10 @@ results = np.zeros((n_samples_count, n_methods))  # Matrix of average error
 # for each sample count considered
 for k, ns in enumerate(ns_vector):
     print(f'Computing estimates using {ns} samples')
+    # TODO: Estimate the value of the integral using CMC
     estimate_cmc = 0
     error = 0
     for _ in range(n_estimates):
-        # TODO: Estimate the value of the integral using CMC
         sample_set,sample_prob = sample_set_hemisphere(ns,uniform_pdf)
         sample_values = collect_samples(integrand,sample_set)
         estimated = compute_estimate_cmc(sample_prob,sample_values)

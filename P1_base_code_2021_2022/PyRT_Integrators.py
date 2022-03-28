@@ -10,15 +10,16 @@ class Integrator(ABC):
     def __init__(self, filename_, experiment_name=''):
         # self.primitives = []
         self.filename = filename_ + experiment_name
-        # self.env_map = None  # not initialized
+        self.env_map = None  # not initialized
         self.scene = None
 
     @abstractmethod
     def compute_color(self, ray):
         pass
 
-    # def add_environment_map(self, env_map_path):
-    #    self.env_map = EnvironmentMap(env_map_path)
+    def add_environment_map(self, env_map_path):
+        self.env_map = EnvironmentMap(env_map_path)
+
     def add_scene(self, scene):
         self.scene = scene
 
@@ -147,13 +148,39 @@ class PhongIntegrator(Integrator):
 
 class CMCIntegrator(Integrator):  # Classic Monte Carlo Integrator
 
+
     def __init__(self, n, filename_, experiment_name=''):
         filename_mc = filename_ + '_MC_' + str(n) + '_samples' + experiment_name
         super().__init__(filename_mc)
         self.n_samples = n
 
     def compute_color(self, ray):
-        pass
+        uniform_pdf = UniformPDF()
+        hit_data = self.scene.closest_hit(ray)
+        '''
+        
+        :param ray: 
+        :return: 
+        '''
+
+        samples,probability = sample_set_hemisphere(self.n_samples, uniform_pdf)
+        for self.n_samples in range(samples):
+
+            # Center the sample around the surface normal, yielding 𝜔𝑗 ′
+            new_ray = Ray()
+            # Create a secondary ray 𝑟 with direction 𝜔𝑗 ′
+            # Shoot 𝑟 by calling the method scene.closest_hit()
+            if new_ray == True  :
+                #𝐿𝑖 (𝜔𝑗 ) = object_hit.emission;
+
+            else:
+                if self.scene.env_map == :
+                    #𝐿𝑖 (𝜔𝑗 ) = scene.env_map.getValue(𝜔𝑗 );
+                End if
+
+
+
+            pass
 
 
 class BayesianMonteCarloIntegrator(Integrator):
