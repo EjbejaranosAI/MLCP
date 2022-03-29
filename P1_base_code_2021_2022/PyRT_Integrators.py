@@ -177,24 +177,24 @@ class CMCIntegrator(Integrator):  # Classic Monte Carlo Integrator
         for sample, probability in zip(samples, probabilities):
 
             # Center the sample around the surface normal, yielding 𝜔�
-            sample = center_around_normal(sample, hit_data.normal)
-            if hit_data.has_hit:
+            sample = center_around_normal(sample, normal_surf)
+            #if hit_data.has_hit:
 
-                # Create a secondary ray 𝑟 with direction 𝜔𝑗′
-                r = Ray(hit_data.hit_point, sample)
-                # Shoot 𝑟 by calling the method scene.closest_hit()
-                shoot_r = self.scene.closest_hit(r)
-                # If 𝑟 hits the scene geometry, then:
-                if shoot_r.has_hit:
-                    primitiva_two = self.scene.object_list[shoot_r.primitive_index]
-                    # 𝐿𝑖 (𝜔𝑗 ) = object_hit.emission;
-                    L_w = primitiva_two.emission
+            # Create a secondary ray 𝑟 with direction 𝜔𝑗′
+            r = Ray(hit_data.hit_point, sample)
+            # Shoot 𝑟 by calling the method scene.closest_hit()
+            shoot_r = self.scene.closest_hit(r)
+            # If 𝑟 hits the scene geometry, then:
+            if shoot_r.has_hit:
+                primitiva_two = self.scene.object_list[shoot_r.primitive_index]
+                # 𝐿𝑖 (𝜔𝑗 ) = object_hit.emission;
+                L_w = primitiva_two.emission
+            else:
+                if self.scene.env_map is not None:
+                    # 𝐿𝑖 (𝜔𝑗 ) = scene.env_map.getValue(𝜔𝑗 );
+                    L_w = self.scene.env_map.getValue(sample)
                 else:
-                    if self.scene.env_map is not None:
-                        # 𝐿𝑖 (𝜔𝑗 ) = scene.env_map.getValue(𝜔𝑗 );
-                        L_w = self.scene.env_map.getValue(sample)
-                    else:
-                        L_w = BLACK
+                    L_w = BLACK
             fr_gama = fr_material.get_value(sample, inverse_view_port, normal_surf)
             cos_gama = Dot(sample, normal_surf)
             rend += (L_w.multiply(fr_gama)* cos_gama)/probability

@@ -1,8 +1,9 @@
 from PyRT_Core import *
 from PyRT_Integrators import *
+from numba import jit
 import time
 
-
+#@jit(nopython=True,parallel=True,nogil=True) ## c++ faster compile
 def sphere_test_scene(areaLS=False, use_env_map=False):
     # Create a scene object
     scene_ = Scene()
@@ -147,7 +148,8 @@ def cornell_box_scene(dist, side, areaLS=False):
         scene_.add_point_light_sources(point_light_3)
 
     # Set up an environment map
-    env_map_path = 'env_maps/arch_nozero.hdr'
+    #env_map_path = 'env_maps/arch_nozero.hdr'
+    env_map_path = 'env_maps/black_and_white.hdr'
     scene_.set_environment_map(env_map_path)
 
     # Create the camera (always centred at 0,0,0)
