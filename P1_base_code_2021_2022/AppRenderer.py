@@ -51,7 +51,7 @@ def sphere_test_scene(areaLS=False, use_env_map=False):
         # env_map_path = 'env_maps/black_and_white.hdr'
         # env_map_path = 'env_maps/outdoor_umbrellas_4k.hdr'
         # env_map_path = 'env_maps/outdoor_umbrellas_4k_clamped.hdr'
-        env_map_path = 'env_maps/arch_nonzero.hdr'
+        env_map_path = 'env_maps/arch_nozero.hdr'
         scene_.set_environment_map(env_map_path)
 
     # Create the camera
@@ -167,19 +167,19 @@ DIRECTORY = '.\\out\\'
 # -------------------------------------------------Main
 # Create Integrator
 # A1 - Task 1
-#integrator = LazyIntegrator(DIRECTORY + FILENAME)
+# integrator = LazyIntegrator(DIRECTORY + FILENAME)
 # A1 - Task 2
-#integrator = IntersectionIntegrator(DIRECTORY + FILENAME)
+# integrator = IntersectionIntegrator(DIRECTORY + FILENAME)
 # A1 - Task 3
-#integrator = DepthIntegrator(DIRECTORY + FILENAME)
-#integrator = NormalIntegrator(DIRECTORY + FILENAME)
+# integrator = DepthIntegrator(DIRECTORY + FILENAME)
+# integrator = NormalIntegrator(DIRECTORY + FILENAME)
 # A1 - Task 4
-integrator = PhongIntegrator(DIRECTORY + FILENAME)
-# A2 - Task 1
-#integrator = CMCIntegrator(DIRECTORY + FILENAME)
+# integrator = PhongIntegrator(DIRECTORY + FILENAME)
+# A2 - Task 2
+integrator = CMCIntegrator(20, DIRECTORY + FILENAME, "CMC")
 # Create the scene
-scene = sphere_test_scene(areaLS=False, use_env_map=False)
-#scene = cornell_box_scene(0.75, 2, areaLS=False)
+scene = sphere_test_scene(areaLS=False, use_env_map=True)
+# scene = cornell_box_scene(0.75, 2, areaLS=False)
 
 # Attach the scene to the integrator
 integrator.add_scene(scene)

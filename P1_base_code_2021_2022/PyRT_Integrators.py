@@ -112,75 +112,95 @@ class PhongIntegrator(Integrator):
         Phong_color = RGBColor(0, 0, 0)
         hit_data = self.scene.closest_hit(ray)
         if hit_data.has_hit:
-            #si el pixel consigue fuente de luz
-            #We take the light source,
+            # if the pixel obtain a light source
+            # We take the light source,
             SourceLight = self.scene.pointLights[0]
             # Here, we obtain the position and the intensity from the source light
             positionLight = SourceLight.pos
             intensityLight = SourceLight.intensity
 
-
-
-            #Euclidean distance between the point and the source light
+            # Euclidean distance between the point and the source light
             distance = positionLight - hit_data.hit_point
             direction_components = np.array((distance.x, distance.y, distance.z), dtype=np.float64)
             norm_distance = np.linalg.norm(direction_components)
-            dir_distance = distance/norm_distance
+            dir_distance = distance / norm_distance
             primitiva = self.scene.object_list[hit_data.primitive_index]
-            ray_light = Ray(hit_data.hit_point,dir_distance,norm_distance)
+            ray_light = Ray(hit_data.hit_point, dir_distance, norm_distance)
             shadow_hit = self.scene.any_hit(ray_light)
 
-
-
-            new_ray = Ray(hit_data,distance,dir_distance)
-
+            new_ray = Ray(hit_data, distance, dir_distance)
 
             if not shadow_hit:
-                value = primitiva.BRDF.get_value(normal=hit_data.normal,wo=1,wi=dir_distance)
+                value = primitiva.BRDF.get_value(normal=hit_data.normal, wo=1, wi=dir_distance)
 
-                #Equation of diffuse
-                value = value.multiply(SourceLight.intensity/(norm_distance**2))
+                # Equation of diffuse
+                value = value.multiply(SourceLight.intensity / (norm_distance ** 2))
                 return value + primitiva.BRDF.kd.multiply(self.scene.i_a)
             else:
                 return primitiva.BRDF.kd.multiply(self.scene.i_a)
-        else: return BLACK
+        else:
+            return BLACK
 
 
 class CMCIntegrator(Integrator):  # Classic Monte Carlo Integrator
-
 
     def __init__(self, n, filename_, experiment_name=''):
         filename_mc = filename_ + '_MC_' + str(n) + '_samples' + experiment_name
         super().__init__(filename_mc)
         self.n_samples = n
+        self.uniform_pdf = UniformPDF()
 
     def compute_color(self, ray):
-        uniform_pdf = UniformPDF()
+
         hit_data = self.scene.closest_hit(ray)
+        # Generate a sample set 𝑆 of samples over the hemisphere
 
-
-        samples,probability = sample_set_hemisphere(self.n_samples, uniform_pdf)
-
-
-        for samples,probability in zip(samples,probability):
-            gama = center_around_normal(samples)
-            # Center the sample around the surface normal, yielding 𝜔𝑗 ′
-            first_ray = Ray(hit_data.hit_point,gama,norm_distance)
-            # Create a secondary ray 𝑟 with direction 𝜔𝑗 ′
-            secondary_ray = Ray()
-            # Shoot 𝑟 by calling the method scene.closest_hit()
-            r = self.scene.closest_hit()
-            if first_ray == r:
-                #𝐿𝑖 (𝜔𝑗 ) = object_hit.emission;
-
+        if hit_data.has_hit:
+            color = self.monte_carlo(hit_data, ray)
+        else:
+            if self.scene.env_map is not None:
+                # 𝐿𝑖 (𝜔𝑗 ) = scene.env_map.getValue(𝜔𝑗 );
+                color = self.scene.env_map.getValue(ray.d)
             else:
-                if self.scene.env_map == :
-                    #𝐿𝑖 (𝜔𝑗 ) = scene.env_map.getValue(𝜔𝑗 );
-                End if
+                color = BLACK
+        return color
 
+    def monte_carlo(self, hit_data, ray):
+        primitiva = self.scene.object_list[hit_data.primitive_index]
+        fr_material = primitiva.get_BRDF()
+        normal_surf = hit_data.normal
+        inverse_view_port = ray.d * -1
 
+        samples, probabilities = sample_set_hemisphere(self.n_samples, self.uniform_pdf)
+        rend = BLACK
+        # For each sample 𝜔𝑗 ∈ 𝑆:
+        for sample, probability in zip(samples, probabilities):
 
-            pass
+            # Center the sample around the surface normal, yielding 𝜔�
+            sample = center_around_normal(sample, hit_data.normal)
+            if hit_data.has_hit:
+
+                # Create a secondary ray 𝑟 with direction 𝜔𝑗′
+                r = Ray(hit_data.hit_point, sample)
+                # Shoot 𝑟 by calling the method scene.closest_hit()
+                shoot_r = self.scene.closest_hit(r)
+                # If 𝑟 hits the scene geometry, then:
+                if shoot_r.has_hit:
+                    primitiva_two = self.scene.object_list[shoot_r.primitive_index]
+                    # 𝐿𝑖 (𝜔𝑗 ) = object_hit.emission;
+                    L_w = primitiva_two.emission
+                else:
+                    if self.scene.env_map is not None:
+                        # 𝐿𝑖 (𝜔𝑗 ) = scene.env_map.getValue(𝜔𝑗 );
+                        L_w = self.scene.env_map.getValue(sample)
+                    else:
+                        L_w = BLACK
+            fr_gama = fr_material.get_value(sample, inverse_view_port, normal_surf)
+            cos_gama = Dot(sample, normal_surf)
+            rend += (L_w.multiply(fr_gama)* cos_gama)/probability
+        result = rend / self.n_samples
+        return result
+
 
 
 class BayesianMonteCarloIntegrator(Integrator):
