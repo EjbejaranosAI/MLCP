@@ -157,20 +157,20 @@ class CMCIntegrator(Integrator):  # Classic Monte Carlo Integrator
     def compute_color(self, ray):
         uniform_pdf = UniformPDF()
         hit_data = self.scene.closest_hit(ray)
-        '''
-        
-        :param ray: 
-        :return: 
-        '''
+
 
         samples,probability = sample_set_hemisphere(self.n_samples, uniform_pdf)
-        for self.n_samples in range(samples):
 
+
+        for samples,probability in zip(samples,probability):
+            gama = center_around_normal(samples)
             # Center the sample around the surface normal, yielding 𝜔𝑗 ′
-            new_ray = Ray()
+            first_ray = Ray(hit_data.hit_point,gama,norm_distance)
             # Create a secondary ray 𝑟 with direction 𝜔𝑗 ′
+            secondary_ray = Ray()
             # Shoot 𝑟 by calling the method scene.closest_hit()
-            if new_ray == True  :
+            r = self.scene.closest_hit()
+            if first_ray == r:
                 #𝐿𝑖 (𝜔𝑗 ) = object_hit.emission;
 
             else:
