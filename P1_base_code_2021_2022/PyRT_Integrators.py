@@ -101,8 +101,56 @@ class NormalIntegrator(Integrator):
             return RGBColor(color.x, color.y, color.z)
         return BLACK
 
-
 class PhongIntegrator(Integrator):
+
+    def __init__(self, filename_):
+        super().__init__(filename_ + '_Phong')
+
+    def compute_color(self, ray):
+        # ASSIGNMENT 1.4: PUT YOUR CODE HERE
+        diffuse_contribution = RGBColor(0, 0, 0)
+        specular_contribution = RGBColor(0, 0, 0)
+        resulting_color = RGBColor(0, 0, 0)
+        if self.scene.any_hit(ray):
+            hit_data = self.scene.closest_hit(ray)
+            hitted_object = self.scene.object_list[hit_data.primitive_index]
+            # ambient contribution
+            ambient_contribution = hitted_object.get_BRDF().kd.multiply(self.scene.i_a)
+
+            # Check if pixel is lighted
+            hit_point = hit_data.hit_point
+            for pointLight in self.scene.pointLights:
+                point_light_to_vector = pointLight.pos
+                difference_hit_point_to_light = point_light_to_vector - hit_point
+                difference_hit_point_to_light_norm = (difference_hit_point_to_light.x**2 + difference_hit_point_to_light.y**2 + difference_hit_point_to_light.z**2)**0.5
+                difference_hit_point_to_light_normalized = difference_hit_point_to_light / difference_hit_point_to_light_norm
+                difference_light_to_hit_poit_ray = Ray(hit_point, difference_hit_point_to_light_normalized, difference_hit_point_to_light_norm)
+                difference_light_to_hit_poit_ray_hit_info = self.scene.closest_hit(difference_light_to_hit_poit_ray)
+
+                if not difference_light_to_hit_poit_ray_hit_info.has_hit:
+                    normal = hit_data.normal
+                    diffuse_contribution = hitted_object.BRDF.get_value(normal=hit_data.normal, wo=1, wi=difference_hit_point_to_light_normalized)
+                    diffuse_contribution = diffuse_contribution.multiply(pointLight.intensity/(difference_hit_point_to_light_norm**2))
+                    # diffuse contribution
+                    # diffuse_contribution = (pointLight.intensity/(difference_hit_point_to_light_norm**2))*kd*max(0, Dot(normal, difference_hit_point_to_light_normalized))
+                    # specular contribution
+                    viewer_vector_norm = (ray.d.x**2 + ray.d.y**2 + ray.d.z**2)**0.5
+                    viewer_vector_normalized = ray.d / viewer_vector_norm
+                    r = normal*2*(Dot(normal, difference_hit_point_to_light_normalized)) - difference_hit_point_to_light_normalized
+                    K_s = 0.1
+                    s = 25
+                    specular_contribution = (pointLight.intensity/(difference_hit_point_to_light_norm**2))*K_s*max(0, Dot(Vector3D(0,0,0) - viewer_vector_normalized, r))**s
+                    # specular_contribution = RGBColor(specular_contribution, specular_contribution, specular_contribution)
+            if specular_contribution.r < 0 or specular_contribution.g < 0 or specular_contribution.b < 0 or \
+                    specular_contribution.r > 1 or specular_contribution.g > 1 or specular_contribution.b > 1:
+                print(specular_contribution)
+            # ambient_contribution = RGBColor(0, 0, 0)
+            # diffuse_contribution = RGBColor(0, 0, 0)
+            # specular_contribution = RGBColor(0, 0, 0)
+            resulting_color = ambient_contribution + diffuse_contribution + specular_contribution
+        return resulting_color
+
+class PhongIntegrator_(Integrator):
 
     def __init__(self, filename_):
         super().__init__(filename_ + '_Phong')

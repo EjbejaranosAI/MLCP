@@ -1,6 +1,6 @@
 from PyRT_Core import *
 from PyRT_Integrators import *
-from numba import jit
+# from numba import jit
 import time
 
 #@jit(nopython=True,parallel=True,nogil=True) ## c++ faster compile
@@ -176,9 +176,9 @@ DIRECTORY = '.\\out\\'
 # integrator = DepthIntegrator(DIRECTORY + FILENAME)
 # integrator = NormalIntegrator(DIRECTORY + FILENAME)
 # A1 - Task 4
-# integrator = PhongIntegrator(DIRECTORY + FILENAME)
+integrator = PhongIntegrator(DIRECTORY + FILENAME)
 # A2 - Task 2
-integrator = CMCIntegrator(20, DIRECTORY + FILENAME, "CMC")
+# integrator = CMCIntegrator(20, DIRECTORY + FILENAME, "CMC")
 # Create the scene
 scene = sphere_test_scene(areaLS=False, use_env_map=True)
 # scene = cornell_box_scene(0.75, 2, areaLS=False)
