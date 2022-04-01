@@ -81,9 +81,10 @@ class DepthIntegrator(Integrator):
         this_hit = self.scene.closest_hit(ray)
         if this_hit.has_hit:
             hit_distance = this_hit.hit_distance
-            max_depth = 5.0
-            color = max(1 - (hit_distance / max_depth), 0)
-            return RGBColor(color.x, color.y, color.z)
+            max_depth = 5
+            depth_hit_ratio = hit_distance / max_depth
+            color = max(1 - depth_hit_ratio, 0)
+            return RGBColor(color, color, color)
         return BLACK
 
 
