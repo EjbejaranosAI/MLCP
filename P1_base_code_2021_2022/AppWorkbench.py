@@ -1,7 +1,7 @@
 from PyRT_Common import *
 import matplotlib.pyplot as plt
-
-
+from GaussianProcess import *
+from tqdm import tqdm
 # ############################################################################################## #
 # Given a list of hemispherical functions (function_list) and a set of sample positions over the #
 #  hemisphere (sample_pos_), return the corresponding sample values. Each sample value results   #
@@ -45,8 +45,8 @@ def compute_estimate_cmc(sample_prob_, sample_values_):
 # STEP 0                                                               #
 # Set-up the name of the used methods, and their marker (for plotting) #
 # #################################################################### #
-methods_label = [('MC', 'o')]
-# methods_label = [('MC', 'o'), ('MC IS', 'v'), ('BMC', 'x'), ('BMC IS', '1')] # for later practices
+methods_label = [('MC', 'o'), ('BMC', 'x')]
+#methods_label = [('MC', 'o'), ('MC IS', 'v'), ('BMC', 'x'), ('BMC IS', '1')] # for later practices
 n_methods = len(methods_label)  # number of tested monte carlo methods
 
 # ######################################################## #
@@ -84,10 +84,10 @@ print('Ground truth: ' + str(ground_truth))
 # Experimental set-up #
 # ################### #
 ns_min = 20  # minimum number of samples (ns) used for the Monte Carlo estimate
-ns_max = 1001  # maximum number of samples (ns) used for the Monte Carlo estimate
+ns_max = 101  # maximum number of samples (ns) used for the Monte Carlo estimate
 ns_step = 20  # step for the number of samples
 ns_vector = np.arange(start=ns_min, stop=ns_max, step=ns_step)  # the number of samples to use per estimate
-n_estimates = 100  # the number of estimates to perform for each value in ns_vector
+n_estimates = 1  # the number of estimates to perform for each value in ns_vector
 n_samples_count = len(ns_vector)
 
 # Initialize a matrix of estimate error at zero
@@ -96,23 +96,45 @@ results = np.zeros((n_samples_count, n_methods))  # Matrix of average error
 # ################################# #
 #          MAIN LOOP                #
 # ################################# #
-
+n_run = 50
 # for each sample count considered
-for k, ns in enumerate(ns_vector):
-    print(f'Computing estimates using {ns} samples')
-    # TODO: Estimate the value of the integral using CMC
-    estimate_cmc = 0
-    error = 0
-    for _ in range(n_estimates):
-        sample_set,sample_prob = sample_set_hemisphere(ns,uniform_pdf)
-        sample_values = collect_samples(integrand,sample_set)
-        estimated = compute_estimate_cmc(sample_prob,sample_values)
-        error += abs(ground_truth - estimated)
-    abs_error = error/n_estimates
-    results[k, 0] = abs_error
-    #BayesianMonteCarloIntegrator
-    
-    resutls[k,1] = 
+for i in tqdm(range(n_run),desc='CMC'):
+    for k, ns in enumerate(ns_vector):
+        #print(f'Computing estimates using {ns} samples')
+        # TODO: Estimate the value of the integral using CMC
+        estimate_cmc = 0
+        error = 0
+        for _ in range(n_estimates):
+            sample_set,sample_prob = sample_set_hemisphere(ns,uniform_pdf)
+            sample_values = collect_samples(integrand,sample_set)
+            estimated = compute_estimate_cmc(sample_prob,sample_values)
+            error += abs(ground_truth - estimated)
+        abs_error = error/n_estimates
+        results[k, 0] += abs_error
+#BayesianMonteCarloIntegrator
+results[k, 0] /= n_run
+
+GaussianProc = GP(SobolevCov(),Constant(1))
+n_runs = 10
+for i in tqdm(range(n_runs),desc='BMC'):
+    for k, ns in enumerate(ns_vector):
+        #print(f'Computing estimates using {ns} samples')
+        # TODO: Estimate the value of the integral using CMC
+        estimate_cmc = 0
+        error = 0
+        for _ in range(n_estimates):
+            sample_set,sample_prob = sample_set_hemisphere(ns,uniform_pdf)
+            sample_values = collect_samples(integrand,sample_set)
+
+            GaussianProc.add_sample_pos(sample_set)
+            GaussianProc.add_sample_val(sample_values)
+
+            estimated = GaussianProc.compute_integral_BMC().r
+
+            error += abs(ground_truth - estimated)
+            results[k, 1] += abs_error
+results[k, 1] /= n_run
+
 # ################################################################################################# #
 # Create a plot with the average error for each method, as a function of the number of used samples #
 # ################################################################################################# #

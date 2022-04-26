@@ -4,7 +4,7 @@ import numpy as np
 from numpy import ndarray
 from abc import ABC, abstractmethod  # Abstract Base Class
 
-
+from PyRT_Integrators import *
 class CovarianceFunction(ABC):
 
     @abstractmethod
@@ -135,10 +135,18 @@ class GP:
             # ADD YOUR CODE HERE #
             # ################## #
 
-        for j in range(ns_z):
-            z_vec[j] += self.cov_func.eval(omega_i,sample_set_z[j])/probab[j]
+        #for j in range(ns_z):
+        #    z_vec[j] += self.cov_func.eval(omega_i,sample_set_z[j])/probab[j]
+        sample_values = [self.cov_func.eval(omega_i, value) for value in sample_set_z]
+
+        z_vec[i] = compute_estimate_cmc(probab,sample_values)
+
 
         return z_vec
+
+
+
+
 
     # Method in charge of computing the BMC integral estimate (assuming the the prior mean function has value 0)
     def compute_integral_BMC(self):
@@ -148,5 +156,21 @@ class GP:
         # ADD YOUR CODE HERE #
         # ################## #
 
-        res = BLACK + self.z + self.invQ * self.sample_val
+        for (w,y) in zip(self.weights,self.samples_val):
+            res += y*w
         return res
+
+
+def compute_estimate_cmc(sample_prob_, sample_values_):
+    # TODO: PUT YOUR CODE HERE
+    '''
+    This function returns the classic Monte Carlo (cmc) estimate of the integral
+    Parameters:     :param sample_prob_: Is the probability of the values
+                    :param sample_prob_:
+                    :param sample_values_: Is the samples values of an integrand
+    :return:        MC_estimator --> Return the classic Monte carlo estimate of the integral
+    '''
+    cont = 0
+    for probability, sample in zip(sample_prob_,sample_values_):
+        cont += sample/probability
+    return cont / len(sample_prob_)
