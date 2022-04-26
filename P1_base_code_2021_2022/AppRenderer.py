@@ -1,6 +1,7 @@
+import cv2
 from PyRT_Core import *
 from PyRT_Integrators import *
-from numba import jit
+#from numba import jit
 import time
 
 #@jit(nopython=True,parallel=True,nogil=True) ## c++ faster compile
@@ -51,8 +52,8 @@ def sphere_test_scene(areaLS=False, use_env_map=False):
         # Set up an environment map
         # env_map_path = 'env_maps/black_and_white.hdr'
         # env_map_path = 'env_maps/outdoor_umbrellas_4k.hdr'
-        # env_map_path = 'env_maps/outdoor_umbrellas_4k_clamped.hdr'
-        env_map_path = 'env_maps/arch_nozero.hdr'
+        env_map_path = 'env_maps/outdoor_umbrellas_4k_clamped.hdr'
+        #env_map_path = 'env_maps/arch_nozero.hdr'
         scene_.set_environment_map(env_map_path)
 
     # Create the camera

@@ -110,7 +110,9 @@ for k, ns in enumerate(ns_vector):
         error += abs(ground_truth - estimated)
     abs_error = error/n_estimates
     results[k, 0] = abs_error
-
+    #BayesianMonteCarloIntegrator
+    
+    resutls[k,1] = 
 # ################################################################################################# #
 # Create a plot with the average error for each method, as a function of the number of used samples #
 # ################################################################################################# #
