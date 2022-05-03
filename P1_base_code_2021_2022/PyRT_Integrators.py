@@ -211,4 +211,43 @@ class BayesianMonteCarloIntegrator(Integrator):
         self.myGP = myGP
 
     def compute_color(self, ray):
-        pass
+        l_i = Constant(1)
+        kd = 1
+        brdf = Constant(kd)
+        cosine_term = CosineLobe(1)
+        integrand = [l_i, brdf, cosine_term]
+        estimate = BLACK
+        this_hit = self.scene.closest_hit(ray)
+        if this_hit.has_hit:
+            normal = this_hit.normal
+            samples_val = self.myGP.samples_val
+            samples_pos = self.myGP.samples_pos
+            weights = self.myGP.weights
+            rotated_samples_pos = []
+            rotated_samples_val = []
+            for sample_val, sample_pos in zip(samples_val, samples_pos):
+                rotated_sample_pos = center_around_normal(sample_pos, normal)
+                rotated_samples_pos.append(rotated_sample_pos)
+
+            for sample_idx, sample in enumerate(rotated_samples_pos):
+                r = Ray(this_hit.hit_point, sample)
+                # Shoot 𝑟 by calling the method scene.closest_hit()
+                shoot_r = self.scene.closest_hit(r)
+                if shoot_r.has_hit:
+                    primitiva_two = self.scene.object_list[shoot_r.primitive_index]
+                    # 𝐿𝑖 (𝜔𝑗 ) = object_hit.emission;
+                    L_w = primitiva_two.emission
+                else:
+                    if self.scene.env_map is not None:
+                        # 𝐿𝑖 (𝜔𝑗 ) = scene.env_map.getValue(𝜔𝑗 );
+                        L_w = self.scene.env_map.getValue(sample)
+                    else:
+                        L_w = BLACK
+
+                rotated_samples_val.append(L_w)
+
+            self.myGP.samples_val = rotated_samples_val
+            self.myGP.samples_pos = rotated_samples_pos
+            estimate = self.myGP.compute_integral_BMC()
+
+        return estimate

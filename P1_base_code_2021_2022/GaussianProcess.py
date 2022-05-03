@@ -137,10 +137,15 @@ class GP:
 
         #for j in range(ns_z):
         #    z_vec[j] += self.cov_func.eval(omega_i,sample_set_z[j])/probab[j]
-        sample_values = [self.cov_func.eval(omega_i, value) for value in sample_set_z]
+            sample_values = [self.cov_func.eval(omega_i, value) for value in sample_set_z]
 
-        z_vec[i] = compute_estimate_cmc(probab,sample_values)
+            z_vec[i] = compute_estimate_cmc(probab, sample_values)
 
+            """sum_integral = 0
+            for sample, prob in zip(sample_set_z, probab):
+                sum_integral += self.cov_func.eval(omega_i, sample) / prob  # * prob
+    
+            z_vec[i] = sum_integral / ns_z"""
 
         return z_vec
 
@@ -156,8 +161,8 @@ class GP:
         # ADD YOUR CODE HERE #
         # ################## #
 
-        for (w,y) in zip(self.weights,self.samples_val):
-            res += y*w
+        for w, y in zip(self.weights, self.samples_val):
+            res += y.__mul__(w)
         return res
 
 
