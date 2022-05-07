@@ -202,7 +202,6 @@ class CMCIntegrator(Integrator):  # Classic Monte Carlo Integrator
         return result
 
 
-
 class BayesianMonteCarloIntegrator(Integrator):
     def __init__(self, n, myGP, filename_, experiment_name=''):
         filename_bmc = filename_ + '_BMC_' + str(n) + '_samples' + experiment_name
@@ -211,24 +210,19 @@ class BayesianMonteCarloIntegrator(Integrator):
         self.myGP = myGP
 
     def compute_color(self, ray):
-        l_i = Constant(1)
-        kd = 1
-        brdf = Constant(kd)
-        cosine_term = CosineLobe(1)
-        integrand = [l_i, brdf, cosine_term]
         estimate = BLACK
         this_hit = self.scene.closest_hit(ray)
         if this_hit.has_hit:
             normal = this_hit.normal
-            samples_val = self.myGP.samples_val
             samples_pos = self.myGP.samples_pos
-            weights = self.myGP.weights
             rotated_samples_pos = []
             rotated_samples_val = []
-            for sample_val, sample_pos in zip(samples_val, samples_pos):
+            # rotate samples around the normal of the ray hit
+            for sample_pos in samples_pos:
                 rotated_sample_pos = center_around_normal(sample_pos, normal)
                 rotated_samples_pos.append(rotated_sample_pos)
 
+            # sample new values shooting the rotated samples positions from the hit_point
             for sample_idx, sample in enumerate(rotated_samples_pos):
                 r = Ray(this_hit.hit_point, sample)
                 # Shoot 𝑟 by calling the method scene.closest_hit()
@@ -246,8 +240,13 @@ class BayesianMonteCarloIntegrator(Integrator):
 
                 rotated_samples_val.append(L_w)
 
-            self.myGP.samples_val = rotated_samples_val
-            self.myGP.samples_pos = rotated_samples_pos
+            # assign new values and position to myGP object and compute integration
+            self.myGP.add_sample_val(rotated_samples_val)
             estimate = self.myGP.compute_integral_BMC()
+        elif self.scene.env_map is not None:
+            # 𝐿𝑖 (𝜔𝑗 ) = scene.env_map.getValue(𝜔𝑗 );
+            estimate = self.scene.env_map.getValue(ray.d)
+        else:
+            estimate = BLACK
 
         return estimate

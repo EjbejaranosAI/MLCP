@@ -182,27 +182,12 @@ DIRECTORY = '.\\out\\'
 # A2 - Task 2
 # integrator = CMCIntegrator(20, DIRECTORY + FILENAME, "CMC")
 
-def collect_samples(function_list, sample_pos_):
-    sample_values = []
-    for i in range(len(sample_pos_)):
-        val = 1
-        for j in range(len(function_list)):
-            val *= function_list[j].eval(sample_pos_[i])
-        sample_values.append(RGBColor(val, 0, 0))  # for convenience, we'll only use the red channel
-    return sample_values
 
 ns = 40
-l_i = Constant(1)
-kd = 1
-brdf = Constant(kd)
-cosine_term = CosineLobe(1)
-integrand = [l_i, brdf, cosine_term]
 uniform_pdf = UniformPDF()
 sample_set, sample_prob = sample_set_hemisphere(ns, uniform_pdf)
-sample_values = collect_samples(integrand, sample_set)
 GaussianProc = GP(SobolevCov(), 1)
 GaussianProc.add_sample_pos(sample_set)
-GaussianProc.add_sample_val(sample_values)
 integrator = BayesianMonteCarloIntegrator(20, GaussianProc, DIRECTORY + FILENAME, "CMC")
 # Create the scene
 scene = sphere_test_scene(areaLS=False, use_env_map=True)
