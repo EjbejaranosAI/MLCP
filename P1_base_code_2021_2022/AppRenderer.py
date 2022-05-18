@@ -183,12 +183,16 @@ DIRECTORY = '.\\out\\'
 # integrator = CMCIntegrator(20, DIRECTORY + FILENAME, "CMC")
 
 
-ns = 40
+ns = 20
+n_GaussianProcs = 2
 uniform_pdf = UniformPDF()
 sample_set, sample_prob = sample_set_hemisphere(ns, uniform_pdf)
-GaussianProc = GP(SobolevCov(), 1)
-GaussianProc.add_sample_pos(sample_set)
-integrator = BayesianMonteCarloIntegrator(20, GaussianProc, DIRECTORY + FILENAME, "CMC")
+GaussianProcs = []
+for i in range (n_GaussianProcs):
+    GaussianProc = GP(SobolevCov(), 1)
+    GaussianProc.add_sample_pos(sample_set)
+    GaussianProcs.append(GaussianProc)
+integrator = BayesianMonteCarloIntegrator(ns, GaussianProcs, DIRECTORY + FILENAME, "CMC")
 # Create the scene
 scene = sphere_test_scene(areaLS=False, use_env_map=True)
 # scene = cornell_box_scene(0.75, 2, areaLS=False)
