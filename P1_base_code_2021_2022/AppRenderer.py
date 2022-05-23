@@ -183,12 +183,12 @@ DIRECTORY = '.\\out\\'
 # integrator = CMCIntegrator(20, DIRECTORY + FILENAME, "CMC")
 
 
-ns = 20
+ns = 40
 n_GaussianProcs = 2
 uniform_pdf = UniformPDF()
 sample_set, sample_prob = sample_set_hemisphere(ns, uniform_pdf)
 GaussianProcs = []
-for i in range (n_GaussianProcs):
+for i in range(n_GaussianProcs):
     GaussianProc = GP(SobolevCov(), 1)
     GaussianProc.add_sample_pos(sample_set)
     GaussianProcs.append(GaussianProc)
