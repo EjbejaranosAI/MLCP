@@ -135,8 +135,6 @@ class GP:
             # ADD YOUR CODE HERE #
             # ################## #
 
-        #for j in range(ns_z):
-        #    z_vec[j] += self.cov_func.eval(omega_i,sample_set_z[j])/probab[j]
             sample_values = [self.cov_func.eval(omega_i, value) for value in sample_set_z]
 
             z_vec[i] = compute_estimate_cmc(probab, sample_values)
